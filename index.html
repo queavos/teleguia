@@ -1,0 +1,223 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1"> 
+        <title>Teleguia</title>
+        <link href="css/jquery.mobile-1.2.0.min.css" rel="stylesheet" type="text/css">
+        <link href="themes/teleguia-test.min.css" rel="stylesheet" type="text/css">
+        <link href="font-awesome/jqm-icon-pack-2.1.2-fa.css" rel="stylesheet" type="text/css">
+    	<link href="css/app.css" rel="stylesheet" type="text/css">
+        <script type="text/javascript" src="js/jquery.js"></script>
+        <script type="text/javascript" src="js/jquery.mobile-1.2.0.min.js"></script>
+        <script type="text/javascript" src="js/jquery.mobile.utils.js"></script>
+        <script type="text/javascript" src="js/funciones.js"></script>
+        <script type="text/javascript" src="js/conf.js"></script>
+        <script type="text/javascript" src="js/phonegap.js"></script>
+
+        <script type="text/javascript" >
+
+			
+            $(document).ready(function() {
+                ///
+                $.mobile.ajaxEnabled =true;
+				$.mobile.defaultTransition ='none';
+				$.mobile.loadingMessage ='Cargando...';
+				var currentId;
+				get_localidades();
+                $('#btn_pornombre').click(
+				function (){
+					 $.mobile.changePage("#por_nombre",{ transition: "none"});
+					}
+				);
+				$('#btn_pornro').click(
+				function (){
+					 $.mobile.changePage("#por_numero",{ transition: "none"});
+					}
+				);
+				$('.homelink').click(
+				function (){
+					 $.mobile.changePage("#inicio",{ transition: "none"});
+					}
+				);
+				$('.aboutlink').click(
+				function (){
+					 $.mobile.changePage("#about",{ transition: "none"});
+					}
+				);
+				
+				$("#cmb_localname").change(function()
+				{
+					  localnombre=$(this).val();
+				}  );
+				
+                $("#cmb_localnum").change(function()
+				{
+					  localnumero=$(this).val();
+				$("#cmb_localnum").val($(this).val());
+				}  );				
+				$('#resultado ul li a').live("click", function(evt) {
+							$.mobile.changePage("#datos", { transition: "none"});
+                    		$.mobile.loading( 'show', { text: 'foo',textVisible: true,theme: 'z', html: ""});	
+							currentId = $(this).attr('id');
+                    		traer_abonado(currentId);
+							$.mobile.loading('hide');
+                    		evt.preventDefault();
+							
+                	});
+				$("#buscar_titu").click(function() {
+					$.mobile.changePage("#resultado",{ transition: "none"});
+					$.mobile.loading( 'show', { text: 'foo',textVisible: true,theme: 'z', html: ""});
+                    $("#encontrados").html("Cargando...");
+                    var url = dir_remota + "?titular=" + $('#txt_titular').val() + "&&local=" + $("#cmb_localname option:selected").val();
+                    $.ajax({
+                        dataType: "jsonp",
+                        data: "",
+                        url: url,
+                        success: function(data) {
+                            $.mobile.loading('hide');							
+							procesar_datos(data);
+                        }
+                    });
+                }
+                );
+                $("#buscar_nro").click(function() {
+					$.mobile.changePage("#resultado",{ transition: "none"});
+                    $("#encontrados").html("Cargando...");
+					$.mobile.loading( 'show', { text: 'foo',textVisible: true,theme: 'z', html: ""});				
+                    var url = dir_remota + "?nro="+ $('#txt_nro').val()+"&&local=" + $("#cmb_localnum").val();;
+                    $.ajax({
+                        dataType: "jsonp",
+                        data: "",
+                        url: url,
+                        success: function(data) {
+                            $.mobile.loading('hide');
+							procesar_datos(data);
+							
+							
+                        }
+                    });
+                });
+            }
+            );//////////
+
+
+
+
+        </script>
+        
+
+    
+    </head>
+
+    <body>
+        <!--  Pagina inicio -->    
+        <div data-role="page" id="inicio" data-theme="a" >
+            <div data-role="header" data-position="fixed"> 
+                <h3>Teleguia <span class="subtitle">(Itapua, Paraguay)</span></h3>
+            <a href="#" data-role="button" data-icon="info" data-iconpos="notext" class="aboutlink ui-btn-right">info</a> </div>
+            <div data-role="content">
+              <div data-role="controlgroup">
+              	<a  data-role="button" id="btn_pornombre">Por Nombre</a>			
+              	<a  data-role="button" id="btn_pornro">Por Numero</a>
+              </div>
+
+            <div data-role="footer" data-position="fixed">
+                  <h3>queavos</h3>
+                </div>
+    </div> </div>
+            <!--  Pagina resultados -->
+            <div data-role="page" id="resultado" data-theme="a">
+                <div data-role="header" data-position="fixed"><a  data-role="button" data-icon="home" data-iconpos="notext" class="ui-btn-left homelink">Inicio</a>
+                    <h3 id="encontrados">Resultados</h3><a href="#" data-role="button" data-icon="info" data-iconpos="notext" class="aboutlink ui-btn-right">info</a>
+                </div>
+                <div data-role="content">
+                    <div id="resultados">
+                        <ul data-role='listview' id='lista_resultado' data-filter="true" data-filter-placeholder="Filtrar Resultado"> </ul>
+                    </div></div>
+                <div data-role="footer" data-position="fixed">
+                                            <a  data-rel="back" data-role="button" data-icon="arrow-l" data-iconpos="notext" class="ui-btn-left" data-transition="none">Botón</a>
+                    <h4>queavos</h4>
+                </div>
+            </div>
+            <!--  Pagina form buscar por nombre -->
+            <div data-role="page" id="por_nombre" data-theme="a">
+                <div data-role="header" data-position="fixed">
+                    <a  data-role="button" data-icon="home" data-iconpos="notext" class="ui-btn-left homelink">Inicio</a>
+                    <h1>Buscar Por Nombre</h1><a href="#" data-role="button" data-icon="info" data-iconpos="notext" class="aboutlink ui-btn-right">info</a>
+                </div>
+                <div data-role="content">
+                    <div data-role="fieldcontain">
+                        <div data-role="fieldcontain">
+                            <label for="selectmenu" class="select">Seleccione Localidad :</label>
+                            <select name="cmb_localname" id="cmb_localname" class="cmb_localidad">
+
+                            </select>
+                        </div>                                
+                        <div data-role="fieldcontain">
+                            <label for="textinput">Ingresar el Nombre:</label>
+                            <input type="text" id="txt_titular" value=""  />
+                            <div><a  data-role="button" id="buscar_titu" >Buscar</a></div>
+                        </div>
+                    </div>
+                    <div data-role="footer" data-position="fixed">
+                        <a  data-rel="back" data-role="button" data-icon="arrow-l" data-iconpos="notext" class="ui-btn-left" data-transition="none">Botón</a>
+                        <h4>queavos</h4></div></div></div>
+                <!--  Pagina form buscar por numero -->                
+                <div data-role="page" id="por_numero" data-theme="a">
+                    <div data-role="header"><a  data-role="button" data-icon="home" data-iconpos="notext" class="ui-btn-left homelink">Inicio</a>
+                        <h1>Buscar Por Nro</h1><a href="#" data-role="button" data-icon="info" data-iconpos="notext" class="aboutlink ui-btn-right">info</a>
+                    </div>
+                    <div data-role="content">
+                        <div data-role="fieldcontain">
+                            <div data-role="fieldcontain">
+                                <label  class="select">Seleccione Localidad :</label>
+                                <select name="cmb_localnum" id="cmb_localnum" class="cmb_localidad">
+
+                                </select>
+                            </div>
+                            <label>Ingresar Nro (sin el 07xx):</label>
+                            <input type="text" id="txt_nro" value=""  />
+                            <a  id="buscar_nro" data-role="button">Buscar</a></div>
+                    </div>
+                    <div data-role="footer" data-position="fixed">
+                                            <a  data-rel="back" data-role="button" data-icon="arrow-l" data-iconpos="notext" class="ui-btn-left" data-transition="none">Botón</a>
+                        <h4>queavos</h4>
+                    </div>
+                </div>  
+                <!--  Pagina mostrar datos del abonado -->              
+                <div data-role="page" id="datos" data-theme="a">
+                    <div data-role="header" data-position="fixed"><a  data-role="button" data-icon="home" data-iconpos="notext" class="ui-btn-left homelink">Inicio</a>
+                        <h1>Datos Del Abonado</h1>
+                    </div>
+                    <div data-role="content"><ul id="salida">
+                        </ul></div>
+                    <div data-role="footer" data-position="fixed">
+                        <a href="#resultado" data-role="button" data-icon="arrow-l" data-iconpos="notext" class="ui-btn-left" data-transition="none">Botón</a>
+                        <h4>queavos</h4>
+                    </div>
+                </div>
+                <p>&nbsp;                
+                <div data-role="page" id="about" data-theme="b">
+                  <div data-role="header">
+                  	<a  data-role="button" data-icon="home" data-iconpos="notext" class="ui-btn-left homelink">Inicio</a>
+                    <h1>Info</h1> 
+                  </div>
+                  <div data-role="content"><h4>Guia telefonica de Itapua - Paraguay</h4>
+                  <p>
+Aplicacion creada con el fin de probar "Phonegap" y jquery mobile
+Los datos fueron recolectados de la web, la calidad de estos es relativa.
+No estan actualizados, y no seran actualizados. Las funcionalidades que se agreguen 
+se haran usando los datos ya existentes.
+</p>
+<p>
+Hecho por Osvaldo Micniuk <br>
+
+twitter: @queavos                  </div>
+                  <div data-role="footer" data-position="fixed">
+                    <h4>queavos</h4>
+                  </div>
+                </div>
+                </p>
+    </body>
+                </html>
